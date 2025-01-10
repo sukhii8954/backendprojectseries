@@ -5,6 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    
     "dev": "nodemon src/index.js"
   },
   "keywords": [
@@ -15,6 +16,7 @@
   "author": "Sukhpreet",
   "license": "ISC",
   "devDependencies": {
+
     "nodemon": "^3.1.9",
     "prettier": "^3.4.2"
   }
