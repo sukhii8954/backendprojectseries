@@ -21,6 +21,9 @@ app.get('/', (req, res)=> {  // route on which we did get request and got respon
   res.send("hello im listening")
 })
 
+app.get('youtube', (req , res)=>{
+    res.send("this is my youtube channel")
+})
  app.listen(process.env.PORT, ()=> {  // listening at port
     console.log(`app is listening on port ${process.env.PORT}`);
  })
