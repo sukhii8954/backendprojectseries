@@ -1,14 +1,14 @@
 // method 1:
 // promises method : envoking promise manually
-const asyncHandlerprom = (requestHandler) => {
-    (req, res, next) => {   // return new fn: express middleware style
-    Promise
-    .resolve(requestHandler(req, res, next)) // Runs the original async fn and wraps it inside 
-    .catch((err) => next(err)); // if async fn throws err it get in this catch - central error handler
-  };
-};
+// const asyncHandlerprom = (requestHandler) => {
+//     (req, res, next) => {   // return new fn: express middleware style
+//     Promise
+//     .resolve(requestHandler(req, res, next)) // Runs the original async fn and wraps it inside 
+//     .catch((err) => next(err)); // if async fn throws err it get in this catch - central error handler
+//   };
+// };
 
-export { asyncHandler };
+// export {asyncHandlerprom}
 
 // higher order func: which accepts other func as a parameter
 // const {asyncHandler} = (fn) => () => {}
@@ -33,3 +33,5 @@ const asyncHandler = (fn) => async (req, res, next) => {
     });
   }
 };
+
+export { asyncHandler };
