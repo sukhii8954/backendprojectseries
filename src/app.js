@@ -25,5 +25,6 @@ app.use(express.static("public")) // public is folder name
 
 // cookieParser:  to access user's web browser cookies from my server and to set cookies of user
 //  to put secure cookies in user browser only control by server 
+//  basically: to perform CRUD operations of cookies of user in its web browser
 app.use(cookieParser())
 export { app }
