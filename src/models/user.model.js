@@ -1,4 +1,12 @@
 import mongoose, { Schema } from "mongoose";
+import bcrypt from "bcrypt"; // for hashing passwords
+import jwt from "jsonwebtoken"; // for creating JWT tokens
+
+
+//  Note:
+// direct encryption is not possible so we take help of hooks of mongoose
+// pre hook is used to encrypt the password before saving the user data
+
 
 const userSchema = new Schema(
   {
@@ -49,6 +57,22 @@ const userSchema = new Schema(
     timestamps: true, // to automatically manage createdAt and updatedAt fields
   }
 );
+// on which event we want to run this function we write in brackets
+// we can't use arrow function here as it does have 'this' context in it
+// we need  access of written in userSchema so we use normal function
+// we using async because it takes time for encryption 
+// we using middlerware flag next , so that we can pass this flag forward at the end of this function to have access of next function.
+
+// we only save the password only if there is change in password otherwise don't save the password again
+
+userSchema.pre("save", async function (next) {
+  // checking if password is not modified we run next function
+  if(!this.ismodified("password)")) return next();
+  
+  // if it is modified then we hash the password
+  this.password = bcrypt.hashSync(this.password, 10); // 10 is the hash rounds
+  next(); // call next to continue the save operation
+} )
 
 export const User = mongoose.model("User", userSchema);
 
@@ -61,3 +85,17 @@ export const User = mongoose.model("User", userSchema);
     // When the user logs in, we generate a new refresh token and save it in the DB.
     // When the user wants to get a new access token, they send this refresh token to the server.
     // The server checks if it’s valid and not expired, then gives them a new access token.
+
+
+    // Notes:
+
+    //  bcrypt we used here for hashing the password 
+    //  bcrypt is a core node.js library that helps us hash passwords securely.
+    // jsonwebtoken is used to create and verify JWT tokens. 
+    // It is having 3 main functions:
+    // 1) It inject header by default, which contains the algo used and type of token which is JWT.
+           // It uses HS256 algorithm by default, and the algoithm is called crytographic alogorithm.
+
+    // 2) It injects payload (fancy name of data) which contains the data we want to store in the token.
+    // 3) the signature which is used to verify the token later. 
+    // Additional 4th) the most important thing is secret base32 which makes every token unique and secure.
