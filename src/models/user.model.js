@@ -74,6 +74,16 @@ userSchema.pre("save", async function (next) {
   next(); // call next to continue the save operation
 } )
 
+// making custom methods , just like we get we get (updateOne , deleteOne)  in types of document middleware
+
+//after methods. we can add many methods of our own also 
+// here  we are checking the password with bcrypt
+// when this function is called , user will pass string password which is compared to encrypted password
+
+userSchmea.methods.isPasswordCorrect = async function(password){
+  return await bcrypt.compare(password , this.password)  // this compare returns true or false 
+}
+
 export const User = mongoose.model("User", userSchema);
 
 // note:- 
