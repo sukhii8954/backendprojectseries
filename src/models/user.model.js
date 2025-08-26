@@ -80,9 +80,43 @@ userSchema.pre("save", async function (next) {
 // here  we are checking the password with bcrypt
 // when this function is called , user will pass string password which is compared to encrypted password
 
+// making our own custom method ex: isPasswordCorrect is a property and writing method in it
 userSchmea.methods.isPasswordCorrect = async function(password){
   return await bcrypt.compare(password , this.password)  // this compare returns true or false 
 }
+
+// using jwt sign to generate access token and assigning its expiry date also
+userSchema.methods.generateAccessToken =function(){
+return jwt.sign(
+    {
+      _id:this._id,
+      email: this.email,
+      username:this.username,
+      fullname:this.fullname
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+    }
+  )
+}
+
+
+userSchema.methods.generateRefreshToken =function(){
+  return jwt.sign(
+    {
+      _id:this._id,
+      email: this.email,
+      username:this.username,
+      fullname:this.fullname
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+    }
+  )
+}
+
 
 export const User = mongoose.model("User", userSchema);
 
