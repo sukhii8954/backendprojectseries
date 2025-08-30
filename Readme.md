@@ -34,3 +34,7 @@ custom api and reason -->
 
 # making a wrapper which is generally used so that whenever we need
 # to use such wrapper we will pass function in that wrapper and then it will execute our function and return it : making asynHandler in utils
+
+# using cloudinary to upload file  and will learn how to use Multer package in backend for file upload instead of express fileupload
+
+
