@@ -64,7 +64,7 @@ videoSchema.plugin(mongooseAggregatePaginate);
 export const Video = mongoose.model("Video", videoSchema);
 
 // note:-
-// 1. videofie is the video file URL stored in cloudinary.
+// 1. videofile is the video file URL stored in cloudinary.
 // 2. thumbnail is the thumbnail image URL stored in cloudinary.
 // 3. title and description are required fields for the video.
 // 4. duration is the length of the video in seconds.

@@ -74,7 +74,7 @@ userSchema.pre("save", async function (next) {
   next(); // call next to continue the save operation
 } )
 
-// making custom methods , just like we get we get (updateOne , deleteOne)  in types of document middleware
+// making custom methods , just like  we get (updateOne , deleteOne)  in types of document middleware
 
 //after methods. we can add many methods of our own also 
 // here  we are checking the password with bcrypt
