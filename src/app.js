@@ -27,4 +27,18 @@ app.use(express.static("public")) // public is folder name
 //  to put secure cookies in user browser only control by server 
 //  basically: to perform CRUD operations of cookies of user in its web browser
 app.use(cookieParser())
+
+
+// importing routes here
+import userRouter from './routes/user.routes.js'
+
+
+// routes declaration
+// as we separated the things , routes written in different file and controllers in another 
+// so we use middlewares to get the route
+app.use("/api/v1/users", userRouter) // if we are making api then we define which api version it is in the url only
+
+// after the above route , we need to write at which route we need to go
+// http://localhost:8000/api/v1/users/register or login   ***:- will practice later in postman
+
 export { app }
