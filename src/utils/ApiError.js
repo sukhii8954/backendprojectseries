@@ -24,7 +24,7 @@ class ApiError extends Error {   // Error is the inbuilt class of node api error
         if(stack) {  // to keep the trace in which files there is a problem
            this.stack = stack;
         } else{
-            Error.captureStackTrace(this,this.constructor)
+            Error.captureStackTrace(this, this.constructor)
         }
           //   This helps during debugging—so you can 
           // see exactly where the error happened in your app.
