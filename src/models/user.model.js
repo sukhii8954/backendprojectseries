@@ -70,8 +70,8 @@ userSchema.pre("save", async function (next) {
   if(!this.ismodified("password)")) return next();
   
   // if it is modified then we hash the password
-  this.password = bcrypt.hashSync(this.password, 10); // 10 is the hash rounds
-  next(); // call next to continue the save operation
+  this.password = await bcrypt.hashSync(this.password, 10); // 10 is the hash rounds
+  next(); // call next middleware means :Passes control to the next middleware function so saving can continue.
 } )
 
 // making custom methods , just like  we get (updateOne , deleteOne)  in types of document middleware
