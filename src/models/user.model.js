@@ -25,7 +25,7 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    fullname: {
+    fullName: {
       type: String,
       required: true,
       trim: true,
@@ -67,12 +67,12 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function (next) {
   // checking if password is not modified we run next function
-  if(!this.ismodified("password)")) return next();
+  if(!this.isModified("password")) return next();
   
   // if it is modified then we hash the password
-  this.password = await bcrypt.hashSync(this.password, 10); // 10 is the hash rounds
+  this.password = await bcrypt.hash(this.password, 10); // 10 is the hash rounds
   next(); // call next middleware means :Passes control to the next middleware function so saving can continue.
-} )
+})
 
 // making custom methods , just like  we get (updateOne , deleteOne)  in types of document middleware
 
@@ -81,7 +81,7 @@ userSchema.pre("save", async function (next) {
 // when this function is called , user will pass string password which is compared to encrypted password
 
 // making our own custom method ex: isPasswordCorrect is a property and writing method in it
-userSchmea.methods.isPasswordCorrect = async function(password){
+userSchema.methods.isPasswordCorrect = async function(password){
   return await bcrypt.compare(password , this.password)  // this compare returns true or false 
 }
 
@@ -92,7 +92,7 @@ return jwt.sign(
       _id:this._id,
       email: this.email,
       username:this.username,
-      fullname:this.fullname
+      fullName:this.fullName
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -106,9 +106,7 @@ userSchema.methods.generateRefreshToken =function(){
   return jwt.sign(
     {
       _id:this._id,
-      email: this.email,
-      username:this.username,
-      fullname:this.fullname
+
     },
     process.env.REFRESH_TOKEN_SECRET,
     {

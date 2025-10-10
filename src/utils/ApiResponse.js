@@ -1,5 +1,6 @@
 class ApiResponse {
-    constructor(statusCode, data, message = "success") {
+    constructor(statusCode, data, message = "success")
+    {
         this.statusCode = statusCode
         this.data = data
         this.message = message
@@ -7,5 +8,4 @@ class ApiResponse {
         // this line is just a convenient shortcut to determine if a response should be treated as a success based on the HTTP status code
     }
 }
-
 export { ApiResponse }

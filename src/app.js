@@ -2,7 +2,6 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser";
 // importing routes here
-import userRouter from './routes/user.routes.js'
 
 
 const app = express();
@@ -36,6 +35,7 @@ app.use(cookieParser())
 // routes declaration
 // as we separated the things , routes written in different file and controllers in another 
 // so we use middlewares to get the route
+import userRouter from './routes/user.routes.js'
 app.use("/api/v1/users", userRouter) // if we are making api then we define which api version it is in the url only
 
 // after the above route , we need to write at which route we need to go

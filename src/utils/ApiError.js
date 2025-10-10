@@ -32,4 +32,4 @@ class ApiError extends Error {   // Error is the inbuilt class of node api error
 }
 
 
-export {ApiError}
+export { ApiError }

@@ -28,12 +28,12 @@ cloudinary.config({
 
     // this is the defualt code we can use anywhere when we want to use cloudinary to upload , img , video or any file
     
-const uploadOnCloudinary = async (filePath)=> {
+const uploadOnCloudinary = async (localFilePath)=> {
     try {
-        if(!filePath) return null
+        if(!localFilePath) return null
         // upload the file on cloudinary
        const response = await cloudinary.uploader.upload
-       (filePath,{
+       (localFilePath,{
            resource_type:"auto" 
         })
         // file has beed uploaded , now we give msg that it is uploaded
@@ -44,7 +44,7 @@ const uploadOnCloudinary = async (filePath)=> {
     } catch (error) {
         // if file get not uploaded to server :- as we have localfilepath on server but not uploaded , so to avoid
         // fishing , or malacious we use fs unlinksync to delete the file 
-        fs.unlinkSync(filePath) // remove the locally saved temp file as the upload operation got failed
+        fs.unlinkSync(localFilePath) // remove the locally saved temp file as the upload operation got failed
         return null;
     }
    
