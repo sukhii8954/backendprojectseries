@@ -15,40 +15,47 @@
 // we cant delete a file but we use unlink to remove the link of the file without affecting the directory to which link refers
 // if file is uploaded then we can remove it by unlinking with fs
 
-import {v2 as cloudinary} from "cloudinary"
+import { v2 as cloudinary } from "cloudinary"
 import fs from "fs"
 
 cloudinary.config({
     // Configuration
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-        api_key: process.env.CLOUDINARY_API_KEY, 
-        api_secret: process.env.CLOUDINARY_API_SECRET 
-    });
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 
-    // this is the defualt code we can use anywhere when we want to use cloudinary to upload , img , video or any file
-    
-const uploadOnCloudinary = async (localFilePath)=> {
+// this is the defualt code we can use anywhere when we want to use cloudinary to upload , img , video or any file
+
+const safeUnlink = (p) => {
     try {
-        if(!localFilePath) return null
+        if (p && fs.existsSync(p)) fs.unlinkSync(p);
+    } catch (err) {
+        console.warn("safeUnlink failed:", err.message);
+    }
+};
+
+const uploadOnCloudinary = async (localFilePath) => {
+    try {
+        if (!localFilePath) return null
         // upload the file on cloudinary
-       const response = await cloudinary.uploader.upload
-       (localFilePath,{
-           resource_type:"auto" 
-        })
+        const response = await cloudinary.uploader.upload
+            (localFilePath, {
+                resource_type: "auto"
+            })
         // file has beed uploaded , now we give msg that it is uploaded
-        console.log("file upload successfully",response.url);
-         
-         return response;  // Returns response → so that we can store the url in your database (e.g., user’s profile picture URL, or a video link).
+        console.log("file upload successfully", response.secure_url || response.url);
+
+        return response;  // Returns response → so that we can store the url in your database (e.g., user’s profile picture URL, or a video link).
 
     } catch (error) {
         // if file get not uploaded to server :- as we have localfilepath on server but not uploaded , so to avoid
         // fishing , or malacious we use fs unlinksync to delete the file 
-        fs.unlinkSync(localFilePath) // remove the locally saved temp file as the upload operation got failed
+        console.error("cloudinary upload error: ", error.message);;
+        safeUnlink(localFilePath) // remove the locally saved temp file as the upload operation got failed
         return null;
     }
-   
-   
-}
-    export {uploadOnCloudinary}
-   
+};
+
+export { uploadOnCloudinary }

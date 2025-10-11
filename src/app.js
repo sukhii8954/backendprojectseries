@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser";
+import path from "path";
 // importing routes here
 
 
@@ -22,15 +23,12 @@ app.use(express.json({limit: "20kb"}))
 app.use(express.urlencoded({extended: true , limit: "20kb"})) // by using extended we can give obj within the objects like nested objects
 
 // to store file folder in our DB as public assets so anyone can access it
-app.use(express.static("public")) // public is folder name
+app.use("/public", express.static(path.join(process.cwd(),"public"))) // public is folder name
 
 // cookieParser:  to access user's web browser cookies from my server and to set cookies of user
 //  to put secure cookies in user browser only control by server 
 //  basically: to perform CRUD operations of cookies of user in its web browser
 app.use(cookieParser())
-
-
-
 
 // routes declaration
 // as we separated the things , routes written in different file and controllers in another 

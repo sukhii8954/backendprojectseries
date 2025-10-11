@@ -10,31 +10,22 @@ const registerUser = asyncHandler(async (req, res) => {
     // res.status(200).json({
     //         message: "Server handshaked successfully!!"   // inplace of this we now make a registration of actual user
     //     })
+
     // Step 1:- take values of user from body of req i.e taking user details from frontend or postman
-    //     console.log("REQ.FILES:", JSON.stringify(req.files, null, 2));
+
+    console.log("REQ.FILES:", JSON.stringify(req.files, null, 2)); 
     console.log("REQ.BODY:", req.body);
     const { fullName, email, username, password } = req.body;
     // console.log("email: ", email);
 
     // step 2:- validate input (all inputs are required so will make sure nothing left empty)
-    // some function we using to get true or false in return for each field check
-    //  We’re checking the request body. If any of the fields (fullName, username, email, password) are missing 
-    // or just blank (even spaces only),
-    // we throw an error that will stop registration and tell the client “this field is required!”.
+   
     if ([fullName, username, email, password].some((field) =>
         field?.trim() === "")) {
         //     // as in apiError we need statuCode and message so we pass here
         throw new ApiError(400, "All fields  are required")
 
     }
-
-    // Note:- 
-    /* .some(callback)
-       .some() is an array method.
-       It checks each element in the array and runs the callback on it.
-       If at least one element makes the callback return true, then .some() returns true.   */
-
-
 
     //step 3:- checking if already exist or not:username ,email
     const exisitedUser = await User.findOne({ // if get any existed email or username and check if either of it already exists of not
@@ -48,70 +39,84 @@ const registerUser = asyncHandler(async (req, res) => {
     //  console.log(req.files);
 
     // Step 4: check for images and check for avatar
-    //                                                     // just like express provide req.body , multer provides access of files 
-    const avatarLocalPath = req.files?.avatar[0]?.path; // if first prop exist in uploaded file then take the whole path of that file uploaded by multer
-    console.log("avatarLocalPath raw ->", avatarLocalPath);                                          // first prop. of field we need have one obj with the help of which we get proper path
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;                                                 // req.files.avatar[0].path → the actual path where the file is saved on your server.
-    //                                     
+    //                                                    
+    const avatarLocalPath = req.files?.avatar[0]?.path; 
+    console.log("avatarLocalPath raw ->", avatarLocalPath);                                         
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;                                                                                   
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
+
     // path on local server looks like this: uploads/avatar-1696021234567.png
-
-
-    //     let coverImageLocalPath;
-    //     if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
-    //         coverImageLocalPath = req.files.coverImage[0].path
-    //     }
-
-    if (!avatarLocalPath) {
+    
+       if (!avatarLocalPath) {
         //     //  console.log("req.files structure : " ,req.files);
         throw new ApiError(400, "avatar file is required");
     }
-    //     // step 5: if local paths avail , upload them to cloudinary
 
-    //     //   const normalizedPath = path.resolve(avatarLocalPath);
-    //   const avatarAbs = path.resolve(avatarLocalPath);
-    // resolve absolute paths
+    //     // step 5: if local paths avail , upload them to cloudinary
+    // resolving absolute paths
+
     const avatarAbs = path.resolve(avatarLocalPath);
     const coverAbs = coverImageLocalPath ? path.resolve(coverImageLocalPath) : null;
     
-    let avatarResp = null;
-    try {
-        avatarResp = await uploadOnCloudinary(avatarAbs);          // <-- fixed: pass avatarAbs
-        console.log("avatarResp ->", avatarResp);
-    } catch (err) {
-        console.error("Cloudinary avatar upload error:", err && err.message);
-        avatarResp = null;
+    // the local URL that we can serve via express.static
+    const localAvatarUrl = `/public/temp/${encodeURIComponent(path.basename(avatarAbs))}`;
+  const localCoverUrl = coverAbs ? `/public/temp/${encodeURIComponent(path.basename(coverAbs))}` : "";
+
+
+
+    let avatarUrlSync = ""; // final avatar URL (cloud or local)
+  try {
+    const avatarResp = await uploadOnCloudinary(avatarAbs);
+    console.log("avatarResp ->", avatarResp);
+    if (avatarResp && (avatarResp.secure_url || avatarResp.url)) {
+      avatarUrlSync = avatarResp.secure_url || avatarResp.url;
+
+    } else {
+      // cloud responded but no url — fallback to local
+      avatarUrlSync = localAvatarUrl;
     }
+  } catch (err) {
+    console.error("Cloudinary avatar upload error:", err && err.message);
+    // fallback to local
+    avatarUrlSync = localAvatarUrl;
+  }
+
+
 
     // if cover exists, upload cover (defensive)
-    let coverImagesync = null;
-    if (coverAbs) {
-        try {
-            coverImagesync = await uploadOnCloudinary(coverAbs);
-            console.log("coverImagesync ->", coverImagesync);
-        } catch (err) {
-            console.error("Cloudinary cover upload error:", err && err.message);
-            coverImagesync = null;
-        }
+    let coverUrl = "";
+  if (coverAbs) {
+    try {
+      const coverResp = await uploadOnCloudinary(coverAbs);
+      console.log("coverResp ->", coverResp);
+      if (coverResp && (coverResp.secure_url || coverResp.url)) {
+        coverUrl = coverResp.secure_url || coverResp.url;
+        safeUnlink(coverAbs);
+      } else {
+        coverUrl = localCoverUrl;
+      }
+    } catch (err) {
+      console.error("Cloudinary cover upload error:", err && err.message);
+      coverUrl = localCoverUrl;
     }
-
-    //  const avatar =  await uploadOnCloudinary(avatarAbs);
-    //  console.log(avatar);
-    //  const coverImagesync = await uploadOnCloudinary(coverImageLocalPath);
+  }
 
 
-
-    //      // from utils after uploading to cloudinary ,we check if it is uploaded successfully the avatar or not
-    if (!avatarResp) {
+         // from utils after uploading to cloudinary ,we check if it is uploaded successfully the avatar or not
+    if (!avatarUrlSync) {
         throw new ApiError(400, "wohhohohoh avatar file is required");
     }
     const filename = path.basename(avatarAbs);
     const avatarUrl = `/public/temp/${encodeURIComponent(filename)}`;
 
-    //     // Step 6: create user object -: create entry in db (as in mongodb :data creates in form of object ) and do db calls
+        // Step 6: create user object -: create entry in db (as in mongodb :data creates in form of object ) and do db calls
     const user = await User.create({
-        fullName,
+        fullName: fullName.trim(),
         avatar: avatarUrl,
-        coverImage: coverImagesync?.url || "",
+        coverImage: coverUrl,
         email,
         password,
         username: username.toLowerCase(),
@@ -119,7 +124,7 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     //         // step 7: remove the password and refresh token field from response before giving to user 
-    const createdUser = await User.findById(user._id).select(  // if user is created then only we use "select" method to add those 
+    const createdUser = await User.findById(user._id).select(  
         "-password -refreshToken"                  //      fields with "-" sign which we want to remove
     )
 
