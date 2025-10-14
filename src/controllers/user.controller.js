@@ -13,8 +13,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Step 1:- take values of user from body of req i.e taking user details from frontend or postman
 
-    console.log("REQ.FILES:", JSON.stringify(req.files, null, 2)); 
-    console.log("REQ.BODY:", req.body);
+    // console.log("REQ.FILES:", JSON.stringify(req.files, null, 2)); 
+    // console.log("REQ.BODY:", req.body);
     const { fullName, email, username, password } = req.body;
     // console.log("email: ", email);
 
@@ -41,8 +41,9 @@ const registerUser = asyncHandler(async (req, res) => {
     // Step 4: check for images and check for avatar
     //                                                    
     const avatarLocalPath = req.files?.avatar[0]?.path; 
-    console.log("avatarLocalPath raw ->", avatarLocalPath);                                         
-    // const coverImageLocalPath = req.files?.coverImage[0]?.path;                                                                                   
+    // console.log("avatarLocalPath raw ->", avatarLocalPath);                                         
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path; 
+                                                                                      
     let coverImageLocalPath;
     if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
         coverImageLocalPath = req.files.coverImage[0].path
@@ -70,7 +71,7 @@ const registerUser = asyncHandler(async (req, res) => {
     let avatarUrlSync = ""; // final avatar URL (cloud or local)
   try {
     const avatarResp = await uploadOnCloudinary(avatarAbs);
-    console.log("avatarResp ->", avatarResp);
+    // console.log("avatarResp ->", avatarResp);
     if (avatarResp && (avatarResp.secure_url || avatarResp.url)) {
       avatarUrlSync = avatarResp.secure_url || avatarResp.url;
 
@@ -91,10 +92,10 @@ const registerUser = asyncHandler(async (req, res) => {
   if (coverAbs) {
     try {
       const coverResp = await uploadOnCloudinary(coverAbs);
-      console.log("coverResp ->", coverResp);
+    //   console.log("coverResp ->", coverResp);
       if (coverResp && (coverResp.secure_url || coverResp.url)) {
         coverUrl = coverResp.secure_url || coverResp.url;
-        safeUnlink(coverAbs);
+        // safeUnlink(coverAbs);
       } else {
         coverUrl = localCoverUrl;
       }

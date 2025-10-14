@@ -17,6 +17,12 @@
 
 import { v2 as cloudinary } from "cloudinary"
 import fs from "fs"
+import dotenv from "dotenv";
+dotenv.config();
+
+// console.log("CLOUDINARY_CLOUD_NAME: ", process.env.CLOUDINARY_CLOUD_NAME);
+// console.log("CLOUDINARY_API_KEY: ", process.env.CLOUDINARY_API_KEY);
+// console.log("CLOUDINARY_API_SECRET: ", process.env.CLOUDINARY_API_SECRET);
 
 cloudinary.config({
     // Configuration
@@ -45,15 +51,15 @@ const uploadOnCloudinary = async (localFilePath) => {
                 resource_type: "auto"
             })
         // file has beed uploaded , now we give msg that it is uploaded
-        console.log("file upload successfully", response.secure_url || response.url);
-
+        // console.log("file upload successfully", response.secure_url || response.url);
+          fs.unlinkSync(localFilePath)
         return response;  // Returns response → so that we can store the url in your database (e.g., user’s profile picture URL, or a video link).
 
     } catch (error) {
         // if file get not uploaded to server :- as we have localfilepath on server but not uploaded , so to avoid
         // fishing , or malacious we use fs unlinksync to delete the file 
         console.error("cloudinary upload error: ", error.message);;
-        safeUnlink(localFilePath) // remove the locally saved temp file as the upload operation got failed
+        fs.unlinkSync(localFilePath) // remove the locally saved temp file as the upload operation got failed
         return null;
     }
 };
