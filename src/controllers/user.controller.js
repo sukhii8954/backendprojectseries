@@ -4,7 +4,11 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import path from "path";
+import crypto from "crypto";
 
+
+
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -13,7 +17,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
     const refreshToken = user.generateRefreshToken()
 
     // sending refresh token in database without validating any field here 
-    user.refreshToken = refreshToken
+
+    user.refreshToken = hashToken(refreshToken);
+    console.log("refeshtoken after getting hashed", user.refreshToken)
     await user.save({ validateBeforeSave: false })
 
     return { accessToken, refreshToken }
@@ -170,9 +176,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const { email, username, password } = req.body;
 
-  if (!email || !username) {
-    throw new ApiError(400, "username or email is required");
+  if (!password || (!email && !username)) {
+    throw new ApiError(400, "Provide password and (email or username)");
   }
+
 
   const alreadyExistUser = await User.findOne({ // if get any existed email or username and check if either of it already exists of not
     $or: [{ username }, { email }]      // using or operator to check either of its already exist or not in Db
@@ -183,7 +190,7 @@ const loginUser = asyncHandler(async (req, res) => {
   // }
 
   if (!alreadyExistUser) {
-    throw new ApiError(404, "User does not exists");
+    throw new ApiError(401, "Invalid credentials");
   }
 
   const isPasswordValid = await alreadyExistUser.isPasswordCorrect(password);
@@ -194,9 +201,38 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(alreadyExistUser._id);
 
-  //sending tokens in form of cookies of user
-  
-  
+  // Note:-
+  // as previously we called the user as having empty refresh token and we called method just above 
+  // so we calling database once again so that we send the just generated refresh token or we can update the object and send it in cookies
+
+  // get logged in user to return (exclude secrets)
+
+  const loggedInUser = await User.findById(alreadyExistUser._id).
+    select("-password -refreshToken");
+
+  // returns the full user document from the database. 
+  // That document may include fields you never want to send to clients, especially sensitive ones
+
+
+  //sending tokens in form of cookies of user ,desinging options for that
+
+  const options = {
+    httpOnly: true,   // making cookies secure so that it can only be modifible from server not from frontend 
+    secure: true
+  }
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser, accessToken  // sending again because when user wants to save token from there side 
+        }
+      )
+    )
 
 })
 
