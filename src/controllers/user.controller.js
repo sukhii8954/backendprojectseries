@@ -230,17 +230,24 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser, accessToken  // sending again because when user wants to save token from there side 
-        }
+        },
+        "User logged in successfully"
       )
     )
 
 })
 
 
+  const logoutUser = asyncHandler(async(req,res)=> {
+       //step 1 : find the user and we clear cookies when logging out
+       //step 2 : also clearing the tokens 
 
+       
+  })
 
 export {
   registerUser,
-  loginUser
+  loginUser,
+  logoutUser
 }
 // so when this method would run ,is only decided by routes so we make route for it
