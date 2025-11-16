@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken"
 import { User } from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
 
-export const verifyJWT = asyncHandler(async (req, res, next) => {
+export const verifyJWT = asyncHandler(async (req, _ , next) => {
 
   // may be we not getting accesstoken from cookies may be the user sending a custom header 
   try {

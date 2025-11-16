@@ -238,12 +238,36 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 
-  const logoutUser = asyncHandler(async(req,res)=> {
-       //step 1 : find the user and we clear cookies when logging out
-       //step 2 : also clearing the tokens 
+const logoutUser = asyncHandler(async (req, res) => {
+  //step 1 : find the user and we clear cookies when logging out
+  //step 2 : also clearing the tokens 
+  await User.findByIdAndUpdate(  // we using this method to finding the user as well updating right after it
+    req.user._id,
+    {
+      // using monogoDB operator to update user feild when logging out user
+      $set: {
+        refreshToken: undefined   // removing refreshToken from DB
+      }
+    },
+    {
+      new: true,    // the response we get will bring updated value
+    }
+  )
 
-       
-  })
+  const options = {
+    httpOnly: true,   // making cookies secure so that it can only be modifible from server not from frontend 
+    secure: true
+  }
+
+  // now clearing cookies when logging out the user
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)  // deletes the cookie from the user's browser.
+    .clearCookie("refreshToken", options) // Also deletes only the cookie from the user's browser.
+    .json(new ApiResponse(200, {}, "'user Logged out"))
+
+})
 
 export {
   registerUser,
