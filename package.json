@@ -2,30 +2,34 @@
   "name": "chaiaurbackend",
   "version": "1.0.0",
   "description": "a backend at chai aur code channel - youtube",
-  "type": "module",
-  "main": "src/index.js",
-  "scripts": {
-    "dev": "nodemon src/index.js"
-  },
   "keywords": [
     "javascript",
     "backend",
     "chai"
   ],
-  "author": "Sukhpreet",
+  "homepage": "https://github.com/sukhii8954/backendprojectseries#readme",
+  "bugs": {
+    "url": "https://github.com/sukhii8954/backendprojectseries/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sukhii8954/backendprojectseries.git"
+  },
   "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^3.1.9",
-    "prettier": "^3.4.2"
+  "author": "Sukhpreet",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.2",
+    "bcryptjs": "^3.0.3",
     "chaiaurbackend": "file:",
-    "cloudinary": "^2.7.0",
+    "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "firebase": "^12.4.0",
     "firebase-admin": "^13.5.0",
@@ -34,5 +38,9 @@
     "mongoose": "^8.13.2",
     "mongoose-aggregate-paginate-v2": "^1.1.4",
     "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "prettier": "^3.4.2"
   }
 }
