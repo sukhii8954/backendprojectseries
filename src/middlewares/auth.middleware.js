@@ -6,7 +6,7 @@ import { ApiError } from "../utils/ApiError.js";
 export const verifyJWT = asyncHandler(async (req, _ , next) => {
 
   // may be we not getting accesstoken from cookies may be the user sending a custom header 
-  try {
+  try {                                                   // Authorization : Bearer <accesstoken>
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")  //“First try to get the token from cookies;
     //                                                                                   if not found, try to get it from the Authorization header.”
     //    console.log(token)                                                              if client is using mobile app or postman then token we take from header 
@@ -19,7 +19,7 @@ export const verifyJWT = asyncHandler(async (req, _ , next) => {
 
     // now we find the user from DB by matching the id by using decodedToken as it will have all details from user model
 
-    const user = await User.findById(decodedToken._id).select("-password -refreshToken");
+    const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
 
     if (!user) {
       // todo: discuss about frontend
