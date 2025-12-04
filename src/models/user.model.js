@@ -64,12 +64,13 @@ const userSchema = new Schema(
 // we using middlerware flag next , so that we can pass this flag forward at the end of this function to have access of next function.
 
 // we only save the password only if there is change in password otherwise don't save the password again
-
+// pre-save hook checks:Was password modified?
 userSchema.pre("save", async function (next) {
+
   // checking if password is not modified we run next function
   if(!this.isModified("password")) return next();
   
-  // if it is modified then we hash the password
+  // if modified then then we hash the password
   this.password = await bcrypt.hash(this.password, 10); // 10 is the hash rounds
   next(); // call next middleware means :Passes control to the next middleware function so saving can continue.
 })

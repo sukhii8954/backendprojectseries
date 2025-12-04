@@ -280,10 +280,155 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
+
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(401, "both old and new password are required")
+  }
+  // if user is able to change password means he is already logged in so we take user from req
+  const user = await User.findById(req?.user._id);  // got user
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+
+  }
+  //  will check password entered is correct or not will check with user.model isPasswordCorrect custom made method
+  const isOldPasswordValid = await user.isPasswordCorrect(oldPassword);
+
+  if (!isOldPasswordValid) {
+    throw new ApiError(400, "old password is incorrect");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false }) // rest of the validation i dont want to run so keeping it false
+
+  return res.
+    status(200)
+    .json(new ApiResponse(200, {}, "password changed successfully"));
+
+})
+
+
+const currentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(200, req.user, "Current user fetched successfully")
+})
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+
+  // allowing username , email ,fullName only to update by user in this controller
+
+  const { username, email, fullName } = req.body
+
+  if (!fullName || !username || !email) {
+    throw new ApiError(400, "all fields are required");
+
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {  // mongoDB update operator :; it tells DB to go inside doc and set these specific fields to new value
+
+        // FIELD_NAME : NEW_VALUE
+        username: username,
+        email: email,
+        fullname: fullName
+      }
+    },
+    {
+      new: true
+    }
+
+  ).select("-password")
+
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account Details updated Successfully"))
+
+})
+
+
+const userAvatar = asyncHandler(async (req, res) => {
+
+  const avatarLocalPath = req.file?.path; // user want to change or update his avatar here 
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "avatar file is missing");
+  }
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath)   
+  // uploading new avatar to cloud and we get full object in return
+
+  if (!avatar.url) {
+    throw new ApiError(400, "Error while uploading avatar")
+  }
+  
+    const userNewAvatar = await User.findByIdAndUpdate(
+    req.user?._id,
+   {
+     $set:{
+       avatar: avatar.url  // taking cloudinary url here not the full object
+     }
+   },
+   {new: true}
+  ).select("-password")
+   
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userNewAvatar, "Avatar updated Successfully"))
+
+})
+
+
+ const userCoverImage = asyncHandler(async (req, res) => {
+
+  const coverImageLocalPath = req.file?.path; // user want to change or update his avatar here 
+
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, "coverImage file is missing");
+  }
+
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath)   
+  // uploading new avatar to cloud and we get full object in return
+
+  if (!coverImage.url) {
+    throw new ApiError(400, "Error while uploading avatar")
+  }
+  
+    const userNewCoverImage = await User.findByIdAndUpdate(
+    req.user?._id,
+   {
+     $set:{
+       coverImage: coverImage.url  // taking cloudinary url here not the full object
+     }
+   },
+   {new: true}
+  ).select("-password")
+   
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, userNewCoverImage, "coverImage updated Successfully")
+    )
+
+})
+
+
 export {
   registerUser,
   loginUser,
   logoutUser,
-  refreshAccessToken
+  refreshAccessToken,
+  changeCurrentPassword,
+  currentUser,
+  updateAccountDetails,
+  userAvatar,
+  userCoverImage
 }
 // so when this method would run ,is only decided by routes so we make route for it
