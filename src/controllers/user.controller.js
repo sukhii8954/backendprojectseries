@@ -5,6 +5,7 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
+import { Aggregate } from "mongoose";
 
 
 
@@ -315,7 +316,11 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const currentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(200, req.user, "Current user fetched successfully")
+    .json(new ApiResponse(
+      200,
+      req.user,
+      "Current user fetched successfully"
+    ))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -362,23 +367,28 @@ const userAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "avatar file is missing");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath)   
+  const avatar = await uploadOnCloudinary(avatarLocalPath)
   // uploading new avatar to cloud and we get full object in return
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar")
   }
-  
-    const userNewAvatar = await User.findByIdAndUpdate(
+
+  const userNewAvatar = await User.findByIdAndUpdate(
     req.user?._id,
-   {
-     $set:{
-       avatar: avatar.url  // taking cloudinary url here not the full object
-     }
-   },
-   {new: true}
+    {
+      $set: {
+        avatar: avatar.url
+        // taking cloudinary url here not the full object
+        // utility function to make
+
+      }
+    },
+    { new: true }
   ).select("-password")
-   
+
+  //TODo: delete old avatar (old avatar was on cloudinary)
+
   return res
     .status(200)
     .json(new ApiResponse(200, userNewAvatar, "Avatar updated Successfully"))
@@ -386,7 +396,7 @@ const userAvatar = asyncHandler(async (req, res) => {
 })
 
 
- const userCoverImage = asyncHandler(async (req, res) => {
+const userCoverImage = asyncHandler(async (req, res) => {
 
   const coverImageLocalPath = req.file?.path; // user want to change or update his avatar here 
 
@@ -394,23 +404,23 @@ const userAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "coverImage file is missing");
   }
 
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath)   
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath)
   // uploading new avatar to cloud and we get full object in return
 
   if (!coverImage.url) {
     throw new ApiError(400, "Error while uploading avatar")
   }
-  
-    const userNewCoverImage = await User.findByIdAndUpdate(
+
+  const userNewCoverImage = await User.findByIdAndUpdate(
     req.user?._id,
-   {
-     $set:{
-       coverImage: coverImage.url  // taking cloudinary url here not the full object
-     }
-   },
-   {new: true}
+    {
+      $set: {
+        coverImage: coverImage.url  // taking cloudinary url here not the full object
+      }
+    },
+    { new: true }
   ).select("-password")
-   
+
   return res
     .status(200)
     .json(
@@ -419,6 +429,73 @@ const userAvatar = asyncHandler(async (req, res) => {
 
 })
 
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  // we will get url of channel from params
+
+  const { username } = req.params
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "username is missing of this channel");
+
+  }
+
+  // here we will write our aggregation pipelines to find channel information
+
+  const channel = await User.aggregate([
+
+    {
+      $match: {
+        username: username?.toLowerCase()
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localfield: "_id",
+        foreignField: "channel",
+        as: "subscribers"  // here this is become a new field 
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localfield: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo"  // here this is become a new field 
+      }
+    },
+    // adding 2 more fields to user details when displaying on frontend
+
+    {
+      $addFields: {
+        subscriberCount: {
+          $size: "$subscribers"
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo"
+        },
+
+        // here we add logic of to find if user who logged in is subscribed this channel or not
+        // so we send true or false to the frontend :- isSubscribed is true or false 
+        isSubscribed: {
+          $cond: {
+            // we check in subscribers document is user is there or not
+               // $in is a syntax use to check one thing inside another by passing in array or object separated by comma 
+               
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] }  // checking user with _id is "in" subscribers field or not
+          }
+        }
+      }
+
+    }
+
+
+
+  ])
+
+
+})
 
 export {
   registerUser,
