@@ -459,6 +459,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
+        // matching in db so name become in lowercase and plural
         from: "subscriptions",
         localfield: "_id",
         foreignField: "subscriber",
@@ -469,7 +470,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
     {
       $addFields: {
-        subscriberCount: {
+        subscribersCount: {
           $size: "$subscribers"
         },
         channelsSubscribedToCount: {
@@ -481,21 +482,111 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         isSubscribed: {
           $cond: {
             // we check in subscribers document is user is there or not
-               // $in is a syntax use to check one thing inside another by passing in array or object separated by comma 
-               
-            if: { $in: [req.user?._id, "$subscribers.subscriber"] }  // checking user with _id is "in" subscribers field or not
+            // $in is a syntax use to check one thing inside another by checking in array or object separated by comma 
+
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] }, // checking user with _id is "in" subscribers field or not
+            then: true,
+            else: false
           }
         }
       }
+    },
 
+    {
+      // thhis $ project pipeline only pass or show in frontend those fields which we allow to do from the documents
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1
+
+      }
     }
+  ])
+  console.log(channel);  // shows array as an output
+
+  // checking if array  is having at most one object or not  : actual checking it is not having any object then return not exist
+  if (!channel?.length) {
+    throw new ApiError(404, "channel does not exists")
+  }
 
 
+  return res.
+    status(200)
+    .json(
+      new ApiResponse(200, channel[0], "user channel fetched successfully")
+    )
 
+})
+
+
+const getUserWatchHistory = asyncHandler(async (req, res) => {
+
+  // writing another pipeline here for getting watch history of user by matching it with _id of user
+  //mongoose won't work here , all data goes directly when using aggregation pipelines
+  // so we need to create objectId manually using mongoose types here
+
+  const user = await User.aggregate([
+    {  // #1 got the user 
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id)
+      }
+    },
+    {  // #2 lookup in watchhistory  
+      $lookup: {
+        // matching in db so name become in lowercase and plural -: Video --> videos
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        // nesting pipelines to find owners of users : sub pipelines
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {  // #3 only getting those fields of user which needed using project pipeline
+                    $project: {
+                          fullName: 1,   // getting user name and avatar to display in frontend
+                          username: 1,
+                          avatar: 1
+                    }
+                }
+              ]
+            }
+          },
+          {
+              $addfields: {
+                owner: {
+                    $first: "$owner"  // sending first value as object to frontend with same name 
+                }
+              }
+          }
+        ]
+      }
+    }
   ])
 
 
+    return res.status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user[0].watchHistory,
+        "Watch history fetched successfully!!"
+      )
+    )
 })
+
+
+
 
 export {
   registerUser,
@@ -506,6 +597,8 @@ export {
   currentUser,
   updateAccountDetails,
   userAvatar,
-  userCoverImage
+  userCoverImage,
+  getUserChannelProfile,
+  getUserWatchHistory
 }
 // so when this method would run ,is only decided by routes so we make route for it

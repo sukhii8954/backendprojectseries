@@ -120,6 +120,10 @@ userSchema.methods.generateRefreshToken =function(){
 export const User = mongoose.model("User", userSchema);
 
 // note:- 
+
+   /* Access token carries user info for fast authorization
+    Refresh token carries only user ID for secure re-authentication*/
+    
     // refreshToken is a way to keep the user logged in securely without forcing them to log in again every 15 minutes. 
     // (which JWT token forces user to do every 15 minutes as it JWT token expires within 15 mins or an hour).
     // It’s like a backup key stored in the DB to give them new access tokens.
