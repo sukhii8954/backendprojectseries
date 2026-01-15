@@ -11,7 +11,7 @@ ex: name : sukh
 * Req headers -> from client
 * Resp headers -> from server
 * Representation Headers -> encoding /compression
-* payload headers -> data  ( ex- _id , email of user e have to send we ref data as payload)
+* payload headers -> data  ( ex- _id , email of user  have to send we ref data as payload)
 
 -> caching , authentication , manage state  
 
