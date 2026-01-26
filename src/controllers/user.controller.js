@@ -184,8 +184,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     req.user._id,
     {
       // using monogoDB operator to update user feild when logging out user
-      $set: {
-        refreshToken: undefined   // removing refreshToken from DB
+      $unset: {
+        refreshToken: 1   // this unsetting means this removes the field from document by passing flag as 1 in particular which we want to remove
       }
     },
     {
@@ -237,20 +237,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "no such user found");
     }
 
-
-
-    //  save refresh token in db
-    //  send both tokens back in cookies and in json response
-
-
-
     //  comparing it with database by finding user in db
     //Is this the current refresh token I (the server) issued for this user?
     // (revocation / rotation check)
+
     if (holdingRefreshToken !== user?.refreshToken) {
       throw new ApiError(401, "refresh token is expired")
     }
-
+    
+    //  save refresh token in db
+    //  send both tokens back in cookies and in json response
     //  generating new access token and refresh token 
     const { newAccessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id);
 
@@ -340,9 +336,10 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       $set: {  // mongoDB update operator :; it tells DB to go inside doc and set these specific fields to new value
 
         // FIELD_NAME : NEW_VALUE
-        username: username,
-        email: email,
-        fullname: fullName
+         username,
+         email,
+         fullName
+
       }
     },
     {
@@ -452,7 +449,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "subscriptions",
-        localfield: "_id",
+        localField: "_id",
         foreignField: "channel",
         as: "subscribers"  // here this is become a new field 
       }
@@ -461,7 +458,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       $lookup: {
         // matching in db so name become in lowercase and plural
         from: "subscriptions",
-        localfield: "_id",
+        localField: "_id",
         foreignField: "subscriber",
         as: "subscribedTo"  // here this is become a new field 
       }
