@@ -9,7 +9,8 @@ export const verifyJWT = asyncHandler(async (req, _ , next) => {
   try {                                                   // Authorization : Bearer <accesstoken>
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")  //“First try to get the token from cookies;
     //                                                                                   if not found, try to get it from the Authorization header.”
-    //    console.log(token)                                                              if client is using mobile app or postman then token we take from header 
+    //    console.log(token)        
+    //     if client is using mobile app or postman then token we take from header 
 
     if (!token) {
       throw new ApiError(401, "Unauthorized request")
