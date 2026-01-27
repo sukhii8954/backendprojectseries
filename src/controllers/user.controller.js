@@ -6,6 +6,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import { Aggregate } from "mongoose";
+import mongoose from "mongoose";
+
 
 
 
@@ -446,6 +448,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         username: username?.toLowerCase()
       }
     },
+
+    // fixed the typo error here as MongoDB is case sensitive and throws 500 server error due to that
+    // instead of localfield I need to write localField to fix that error
     {
       $lookup: {
         from: "subscriptions",
@@ -529,8 +534,8 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
 
   const user = await User.aggregate([
     {  // #1 got the user 
-      $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id)
+      $match: {            // Ts giving deprecated warning for ObjectId so using string to ignore that warning 
+        _id: new mongoose.Types.ObjectId(String(req.user._id))
       }
     },
     {  // #2 lookup in watchhistory  
@@ -560,7 +565,7 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
             }
           },
           {
-              $addfields: {
+              $addFields: {
                 owner: {
                     $first: "$owner"  // sending first value as object to frontend with same name 
                 }
