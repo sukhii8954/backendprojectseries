@@ -587,7 +587,15 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
     )
 })
 
-// here we write twitter and playlist controllers and piplines similar to above 
+// here we write twitter and playlist controllers and piplines similar to above
+
+const playlists = asyncHandler(async(req, res)=> {
+  
+})
+
+const tweets = asyncHandler(async (req, res)=>{
+  
+})
 
 
 export {
@@ -606,3 +614,4 @@ export {
 
 
 // so when this method would run ,is only decided by routes so we make route for it
+
