@@ -432,6 +432,7 @@ const userCoverImage = asyncHandler(async (req, res) => {
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   // we will get url of channel from params
 
+ 
   const { username } = req.params
 
   if (!username?.trim()) {
@@ -587,15 +588,6 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
     )
 })
 
-// here we write twitter and playlist controllers and piplines similar to above
-
-const playlists = asyncHandler(async(req, res)=> {
-  
-})
-
-const tweets = asyncHandler(async (req, res)=>{
-  
-})
 
 
 export {

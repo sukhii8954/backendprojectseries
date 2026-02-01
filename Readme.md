@@ -37,4 +37,28 @@ custom api and reason -->
 
 # using cloudinary to upload file  and will learn how to use Multer package in backend for file upload instead of express fileupload
 
+  # Note:- 
+    isliked is just a normal flag variable in JS im using here to toggle the like and its value store
+    in data field in apiresponse which we return to frontend
 
+    req.params :- is used to identify which resource
+
+    --> req.params from the URL path itself
+        for ex:- router.post("/videos/:videoId/like", toggleVideoLike)
+
+        Request URL looks like this with videoId :
+           
+         POST /videos/64fabc123/like
+     
+
+    
+      req.body :-   is used to send data to change that resource
+      
+     --> req.body is extra data sent with the request(usually JSON)
+
+       It used when :-
+       
+          * creating something 
+          * updating content
+          * sending form Data
+     
