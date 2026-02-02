@@ -3,9 +3,6 @@ import { Like } from "../models/like.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { User } from "../models/user.model.js"
-
-
 
 // algorithm to implment:-
 // 1. Validate incoming ID
@@ -13,6 +10,8 @@ import { User } from "../models/user.model.js"
 // 3. IF exists → delete it (unlike)
 // 4. ELSE → create it (like)
 // 5. Return success response
+
+
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params
