@@ -49,6 +49,7 @@ const videoSchema = new Schema(
 
 
     },
+    
     {
         timestamps: true, // to automatically manage createdAt and updatedAt fields
     }
