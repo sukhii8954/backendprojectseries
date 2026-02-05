@@ -110,18 +110,63 @@ const getAllVideos = asyncHandler(async (req, res) => {
     })
 
 
-       // ###############  5)  flatten owner array ########
-         
-       pipeline.push({
-         addFields:{
-             $owner: { $first : "$owner"}
-         }
-       })
-  
+    // ###############  5)  flatten owner array ########
 
+    pipeline.push({
+        addFields: {
+            $owner: { $first: "$owner" }
+        }
+    })
+
+    // ############ sorting videos ##############
+
+    pipeline.push({
+        $sort: {
+            // variable created at top of controller which we take from req.query
+            // its plain JS and MongoDB rule to sort
+
+            // sortBy:- comes from query params , which represents which field you want to sort by ex views , title etc.
+            // sortType: represent direction of sorting  either Asc or Desc
+
+            [sortBy]: sortType === "asc" ? 1 : -1  // using sortBy, becoz : user choose what to sort by views or createdAt
+        }   //fieldName = 1  (asc)
+        // ffieldName = -1  (descending)
+
+
+        // ex:
+        /*  if sortBy = views      condition : valueiftrue : valueifalse
+            so when condition runs : sortType === "asc" ? 1: -1 
+            
+            Rule:- MongoDB needs static keys
+                   JavaScript allows dynamic keys
+           
+        */
+    })
+
+
+    // ##############  pagination ###########
+
+    // plain js object to give numbering to the pages of videos and plugin recognize the keys 
+    // page , limit , sort , collation ,allowDiskUse
+    const options = {
+        page: Number(page),  // which page to return
+        limit: Number(limit)  // how many docs per page
+    }
+    
+    // Video.agregatePaginate(aggregateQuery , options)  : plugin used in video model
+
+    const videos = await Video.aggregatePaginate(
+        Video.aggregate(pipeline),
+        options
+    )
+
+    return res.status(200).json(
+     new ApiResponse(200 , videos , "Videos Fetched Successfully")
+    )
 
 })
 
+// --------------------------------------------------------------------
 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body
